@@ -1,0 +1,34 @@
+url:
+  basepath: "/dating-svc/"
+  baseprefix: "/dating-svc/api/v1/"
+
+server:
+  port: 8080
+  env: "dev"
+  log:
+    level: "debug"
+    output: "stdout"
+    file-path: "./logs/app.log"
+
+security:
+  jwt:
+    jwt-secret: "mysecret"
+    jwt-expire-hours: 24
+
+database:
+  driver: "sqlite"
+  host: ""
+  port: 0
+  username: ""
+  password: ""
+  dbname: "./dating_app_db.sqlite"
+  schemaname: ""
+  max-idle-connections: 1
+  max-open-connections: 1
+  connection-max-lifetime: "0s"
+  connection-max-idle-time: "0s"
+  logger:
+    level: "debug"
+
+app:
+  swipe-limit: 10
