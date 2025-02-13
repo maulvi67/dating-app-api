@@ -26,11 +26,25 @@ func DatingAppHttpHandler(s service.DatingAppService, app *app.Infra) http.Handl
 		base.EncodeResponseHTTP,
 	))
 
+	route.Methods(http.MethodPost).Path(app.UrlWithPrefix("user/premium-update")).Handler(httptransport.NewServer(
+		ep.PurchasePremium,
+		decodeUpdatePremium,
+		base.EncodeResponseHTTP,
+	))
+
 	return route
 }
 
 func decodeSwipe(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req request.SwipeRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+func decodeUpdatePremium(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req request.PurchasePremiumRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		return nil, err
 	}

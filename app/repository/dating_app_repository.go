@@ -14,6 +14,7 @@ type DatingAppRepository interface {
 	GetUserByID(id uint) (*entity.User, error)
 	CheckSwipedUser(userID uint, targetUserID uint, today time.Time) (*entity.Swipe, error)
 	CountSwipedUser(userID uint, today time.Time) (int64, error)
+	SaveUser(data entity.User) (*entity.User, error)
 }
 
 type datingAppRepository struct {
@@ -84,4 +85,12 @@ func (r *datingAppRepository) CountSwipedUser(userID uint, today time.Time) (int
 		return 0, err
 	}
 	return count, nil
+}
+
+func (r *datingAppRepository) SaveUser(data entity.User) (*entity.User, error) {
+	err := r.GetDB().Save(&data).Error
+	if err != nil {
+		return nil, err
+	}
+	return &data, nil
 }

@@ -17,3 +17,7 @@ type SwipeResponse struct {
 	// in: string
 	Message string `json:"message,omitempty"`
 }
+
+type PurchasePremiumResponse struct {
+	Message string `json:"message,omitempty"`
+}

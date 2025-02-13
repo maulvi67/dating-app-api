@@ -12,16 +12,18 @@ import (
 )
 
 type DatingAppEndpoint struct {
-	SignUp endpoint.Endpoint
-	Login  endpoint.Endpoint
-	Swipe  endpoint.Endpoint
+	SignUp          endpoint.Endpoint
+	Login           endpoint.Endpoint
+	Swipe           endpoint.Endpoint
+	PurchasePremium endpoint.Endpoint
 }
 
 func MakeDatingAppEndpoint(s service.DatingAppService) DatingAppEndpoint {
 	return DatingAppEndpoint{
-		SignUp: makeSignUpEndpoint(s),
-		Login:  makeLoginEndpoint(s),
-		Swipe:  makeSwipeEndpoint(s),
+		SignUp:          makeSignUpEndpoint(s),
+		Login:           makeLoginEndpoint(s),
+		Swipe:           makeSwipeEndpoint(s),
+		PurchasePremium: makePurchasePremiumEndpoint(s),
 	}
 }
 
@@ -52,6 +54,21 @@ func makeSwipeEndpoint(s service.DatingAppService) endpoint.Endpoint {
 
 		req.UserID = userIDUint
 		result, msg := s.Swipe(ctx, req)
+		return base.SetHttpResponse(ctx, msg, result), nil
+	}
+}
+
+func makePurchasePremiumEndpoint(s service.DatingAppService) endpoint.Endpoint {
+	return func(ctx context.Context, rqst interface{}) (interface{}, error) {
+		req := rqst.(request.PurchasePremiumRequest)
+		// Extract the userID from the context.
+		userIDUint, ok := ctx.Value(middleware.UserIDKey).(uint)
+		if !ok {
+			return nil, nil
+		}
+
+		req.UserID = userIDUint
+		result, msg := s.PurchasePremium(ctx, req)
 		return base.SetHttpResponse(ctx, msg, result), nil
 	}
 }

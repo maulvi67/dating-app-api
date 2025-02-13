@@ -18,6 +18,7 @@ type DatingAppService interface {
 	SignUp(ctx context.Context, input request.SignUpRequest) (*response.SignUpResponse, message.Message)
 	Login(ctx context.Context, input request.LoginRequest) (*response.LoginResponse, message.Message)
 	Swipe(ctx context.Context, input request.SwipeRequest) (*response.SwipeResponse, message.Message)
+	PurchasePremium(ctx context.Context, input request.PurchasePremiumRequest) (*response.PurchasePremiumResponse, message.Message)
 }
 
 type datingAppService struct {
@@ -59,16 +60,15 @@ func (s *datingAppService) SignUp(ctx context.Context, input request.SignUpReque
 		Gender:       input.Gender,
 		PasswordHash: string(hashed),
 		IsPremium:    false,
+		Verified:     false,
 	}
 
-	// Create the user.
 	_, err = s.repository.CreateUser(user)
 	if err != nil {
 		s.app.Log.Error(err.Error())
 		return nil, message.FailedMsg
 	}
 
-	// You can return additional user data if needed.
 	return &response.SignUpResponse{
 		Message: "User created successfully",
 	}, message.SuccessMsg
@@ -111,7 +111,6 @@ func (s *datingAppService) Login(ctx context.Context, input request.LoginRequest
 }
 
 func (s *datingAppService) Swipe(ctx context.Context, input request.SwipeRequest) (*response.SwipeResponse, message.Message) {
-	// Validate swipe action.
 	if input.Action != "like" && input.Action != "pass" {
 		return nil, message.Message{
 			Code:    message.ErrReqParam.Code,
@@ -119,7 +118,6 @@ func (s *datingAppService) Swipe(ctx context.Context, input request.SwipeRequest
 		}
 	}
 
-	// Retrieve the user based on the provided UserID.
 	user, err := s.repository.GetUserByID(input.UserID)
 	if err != nil {
 		s.app.Log.Warn(err.Error())
@@ -161,5 +159,46 @@ func (s *datingAppService) Swipe(ctx context.Context, input request.SwipeRequest
 
 	return &response.SwipeResponse{
 		Message: "Swipe recorded successfully",
+	}, message.SuccessMsg
+}
+
+func (s *datingAppService) PurchasePremium(ctx context.Context, input request.PurchasePremiumRequest) (*response.PurchasePremiumResponse, message.Message) {
+	user, err := s.repository.GetUserByID(input.UserID)
+	if err != nil {
+		s.app.Log.Warn(err.Error())
+		return nil, message.ErrUserNotFound
+	}
+	switch input.PackageType {
+	case "unlimited_swipes":
+		if user.IsPremium {
+			return nil, message.Message{
+				Code:    message.ErrReqParam.Code,
+				Message: "user already has unlimited swipes",
+			}
+		}
+		user.IsPremium = true
+	case "verified_badge":
+		if user.Verified {
+			return nil, message.Message{
+				Code:    message.ErrReqParam.Code,
+				Message: "user is already verified",
+			}
+		}
+		user.Verified = true
+	default:
+		return nil, message.Message{
+			Code:    message.ErrReqParam.Code,
+			Message: "invalid package type",
+		}
+	}
+
+	_, err = s.repository.SaveUser(*user)
+	if err != nil {
+		s.app.Log.Error(err.Error())
+		return nil, message.FailedMsg
+	}
+
+	return &response.PurchasePremiumResponse{
+		Message: "User updated",
 	}, message.SuccessMsg
 }

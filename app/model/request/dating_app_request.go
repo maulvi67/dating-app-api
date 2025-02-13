@@ -19,6 +19,11 @@ type SwipeRequest struct {
 	UserID uint `json:"-"`
 }
 
+type PurchasePremiumRequest struct {
+	PackageType string `json:"package_type"`
+	UserID      uint   `json:"-"`
+}
+
 // swagger:parameters ReqSignUpRequestBody
 type ReqSignUpRequestBody struct {
 	//  in: body

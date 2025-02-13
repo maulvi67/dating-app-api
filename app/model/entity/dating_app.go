@@ -13,6 +13,7 @@ type User struct {
 	Name         string
 	Gender       string
 	IsPremium    bool
+	Verified     bool
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }
